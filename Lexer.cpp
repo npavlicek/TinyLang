@@ -86,6 +86,10 @@ bool Lexer::detectKeyword()
 		{
 			tokens.push_back({TokenType::FN, currentLineNumber});
 		}
+		else if (buffer == "return")
+		{
+			tokens.push_back({TokenType::RETURN, currentLineNumber});
+		}
 		else
 		{
 			stream.seekg(-buffer.length(), std::ios::cur);

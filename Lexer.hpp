@@ -21,6 +21,7 @@ enum class TokenType
 
 	// functions
 	FN,
+	RETURN,
 
 	// symbols
 	OPEN_PAREN,
@@ -78,6 +79,7 @@ class Lexer
 	"F64",
 
 	"FN",
+	"RETURN",
 
 	"OPEN_PAREN",
 	"CLOSE_PAREN",

@@ -4,7 +4,7 @@
 
 bool Lexer::tokenize()
 {
-	currentLineNumber = 0;
+	currentLineNumber = 1;
 	while (!stream.eof())
 	{
 		// consume blank chars
@@ -36,7 +36,17 @@ bool Lexer::tokenize()
 		if (detectIdentifier())
 			continue;
 
-		std::cout << (char)stream.peek() << std::endl;
+		if (detectNumericalConstant())
+			continue;
+
+		if (std::isgraph(stream.peek()))
+		{
+			std::cout << "unconsumed char: " << (char)stream.peek() << std::endl;
+		}
+		else
+		{
+			std::cout << "unconsumed char: " << stream.peek() << std::endl;
+		}
 
 		stream.get();
 	}
@@ -44,6 +54,148 @@ bool Lexer::tokenize()
 	{
 		std::cout << tokenTypeStrings[(int)tok.type] << ": " << tok.lineNumber << std::endl;
 	}
+	return 0;
+}
+
+void Lexer::throwError(std::string error)
+{
+	std::stringstream errorString;
+	errorString << "Error: " << error << ". at line: " << currentLineNumber;
+	throw std::runtime_error(errorString.str());
+}
+
+bool Lexer::detectNumericalConstant()
+{
+	std::string buffer;
+	bool floatingPoint;
+	TokenType literalType = TokenType::NONE;
+	while (std::isdigit(stream.peek()) || stream.peek() == '_')
+	{
+		if (stream.peek() == '_')
+		{
+			stream.get();
+			continue;
+		}
+		buffer.push_back(stream.get());
+	}
+	if (buffer.length() > 0)
+	{
+		if (stream.peek() == '.')
+		{
+			floatingPoint = true;
+			buffer.push_back(stream.get());
+			while (std::isdigit(stream.peek()) || stream.peek() == '_')
+			{
+				if (stream.peek() == '_')
+				{
+					stream.get();
+					continue;
+				}
+
+				buffer.push_back(stream.get());
+			}
+		}
+
+		std::string suffixBuffer;
+		for (int i = 0; i < 3; i++)
+		{
+			suffixBuffer.push_back(stream.get());
+		}
+
+		if (suffixBuffer == "f32")
+		{
+			literalType = TokenType::LITERAL_F32;
+		}
+		else if (suffixBuffer == "f64")
+		{
+			literalType = TokenType::LITERAL_F64;
+		}
+		else if (suffixBuffer == "u32")
+		{
+			literalType = TokenType::LITERAL_U32;
+		}
+		else if (suffixBuffer == "i32")
+		{
+			literalType = TokenType::LITERAL_I32;
+		}
+		else if (suffixBuffer == "u64")
+		{
+			literalType = TokenType::LITERAL_U64;
+		}
+		else if (suffixBuffer == "i64")
+		{
+			literalType = TokenType::LITERAL_I64;
+		}
+		else
+		{
+			stream.seekg(-3, std::ios::cur);
+		}
+
+		if (literalType != TokenType::NONE)
+		{
+			if (floatingPoint && !(literalType == TokenType::LITERAL_F64 || literalType == TokenType::LITERAL_F32))
+			{
+				throwError("Invalid literal/suffix combo");
+			}
+		}
+
+		if (literalType == TokenType::NONE)
+		{
+			if (floatingPoint)
+			{
+				double val = std::strtod(buffer.c_str(), nullptr);
+				tokens.push_back(
+					{.type = TokenType::LITERAL_F64, .lineNumber = currentLineNumber, .floating64Bit = val});
+				return 1;
+			}
+			else
+			{
+				long long val = std::strtoll(buffer.c_str(), nullptr, 10);
+				tokens.push_back({.type = TokenType::LITERAL_I64, .lineNumber = currentLineNumber, .signed64Val = val});
+				return 1;
+			}
+		}
+		else
+		{
+			switch (literalType)
+			{
+			case TokenType::LITERAL_F64: {
+				double val = std::strtod(buffer.c_str(), nullptr);
+				tokens.push_back({.type = literalType, .lineNumber = currentLineNumber, .floating64Bit = val});
+				return 1;
+			}
+			case TokenType::LITERAL_F32: {
+				float val = std::strtof(buffer.c_str(), nullptr);
+				tokens.push_back({.type = literalType, .lineNumber = currentLineNumber, .floating32Bit = val});
+				return 1;
+			}
+			case TokenType::LITERAL_I32: {
+				int32_t val = std::stoi(buffer, 0, 10);
+				tokens.push_back({.type = literalType, .lineNumber = currentLineNumber, .signed32Val = val});
+				return 1;
+			}
+			case TokenType::LITERAL_U32: {
+				uint32_t val = std::stoi(buffer, 0, 10);
+				tokens.push_back({.type = literalType, .lineNumber = currentLineNumber, .unsigned32Val = val});
+				return 1;
+			}
+			case TokenType::LITERAL_I64: {
+				int64_t val = std::strtol(buffer.c_str(), nullptr, 10);
+				tokens.push_back({.type = literalType, .lineNumber = currentLineNumber, .signed64Val = val});
+				return 1;
+			}
+			case TokenType::LITERAL_U64: {
+				uint64_t val = std::strtoul(buffer.c_str(), nullptr, 10);
+				tokens.push_back({.type = literalType, .lineNumber = currentLineNumber, .unsigned64Val = val});
+				return 1;
+			}
+			default:
+				return 0;
+			}
+			return 1;
+		}
+	}
+
 	return 0;
 }
 

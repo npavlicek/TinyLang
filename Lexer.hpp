@@ -11,6 +11,14 @@ enum class TokenType
 	// Special tokens
 	IDENTIFIER,
 
+	// Constants/Literals
+	LITERAL_F64,
+	LITERAL_F32,
+	LITERAL_U32,
+	LITERAL_I32,
+	LITERAL_U64,
+	LITERAL_I64,
+
 	// types
 	U32,
 	I32,
@@ -42,12 +50,12 @@ struct Token
 	TokenType type;
 	int lineNumber;
 	union {
-		uint32_t unsigned32val;
-		int32_t signed32val;
-		uint64_t unsigned64val;
-		int64_t signed64val;
-		float float_;
-		double double_;
+		uint32_t unsigned32Val;
+		int32_t signed32Val;
+		uint64_t unsigned64Val;
+		int64_t signed64Val;
+		float floating32Bit;
+		double floating64Bit;
 	};
 };
 
@@ -64,11 +72,20 @@ class Lexer
 	bool detectKeyword();
 	bool detectNumericalConstant();
 
+	void throwError(std::string error);
+
 	// clang-format off
-	const std::string tokenTypeStrings[20] = {
+	const std::string tokenTypeStrings[27] = {
 	"NONE",
 
 	"IDENTIFIER",
+
+	"LITERAL_F64",
+	"LITERAL_F32",
+	"LITERAL_U32",
+	"LITERAL_I32",
+	"LITERAL_U64",
+	"LITERAL_I64",
 
 	// Keywords / types
 	"U32",

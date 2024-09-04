@@ -19,6 +19,10 @@ u32 variable_4 = 131_332_u32;
 
 Functions (return type is optional):
 ```
+// Functions must be forward declared before use:
+fn test(<params>) -> <return_type>;
+
+// Defined here
 fn test(<params>) -> <return_type> {
 
     return <value>;

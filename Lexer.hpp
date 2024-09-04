@@ -43,6 +43,7 @@ enum class TokenType
 	MINUS,
 	MULTIPLY,
 	DIVIDE,
+	COMMA,
 };
 
 struct Token
@@ -50,6 +51,7 @@ struct Token
 	TokenType type;
 	int lineNumber;
 	union {
+		size_t identIndex;
 		uint32_t unsigned32Val;
 		int32_t signed32Val;
 		uint64_t unsigned64Val;
@@ -63,6 +65,7 @@ class Lexer
 {
 	std::stringstream &stream;
 	std::vector<Token> tokens;
+	std::vector<std::string> identifiers;
 
 	int currentLineNumber;
 
@@ -75,7 +78,7 @@ class Lexer
 	void throwError(std::string error);
 
 	// clang-format off
-	const std::string tokenTypeStrings[27] = {
+	const std::string tokenTypeStrings[28] = {
 	"NONE",
 
 	"IDENTIFIER",
@@ -109,10 +112,12 @@ class Lexer
 	"MINUS",
 	"MULTIPLY",
 	"DIVIDE",
+	"COMMA",
 	};
 	// clang-format on
 
   public:
 	Lexer(std::stringstream &stream) : stream(stream){};
-	bool tokenize();
+	static bool isPrimitiveType(TokenType type);
+	void tokenize();
 };

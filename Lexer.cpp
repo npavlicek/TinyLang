@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-bool Lexer::tokenize()
+void Lexer::tokenize()
 {
 	currentLineNumber = 1;
 	while (!stream.eof())
@@ -54,13 +54,12 @@ bool Lexer::tokenize()
 	{
 		std::cout << tokenTypeStrings[(int)tok.type] << ": " << tok.lineNumber << std::endl;
 	}
-	return 0;
 }
 
 void Lexer::throwError(std::string error)
 {
 	std::stringstream errorString;
-	errorString << "Error: " << error << ". at line: " << currentLineNumber;
+	errorString << "[Error] " << error << ". at line: " << currentLineNumber;
 	throw std::runtime_error(errorString.str());
 }
 
@@ -263,7 +262,9 @@ bool Lexer::detectIdentifier()
 		{
 			buffer.push_back(stream.get());
 		}
-		tokens.push_back({TokenType::IDENTIFIER, currentLineNumber});
+		tokens.push_back(
+			{.type = TokenType::IDENTIFIER, .lineNumber = currentLineNumber, .identIndex = identifiers.size()});
+		identifiers.push_back(buffer);
 		return 1;
 	}
 	return 0;
@@ -291,6 +292,15 @@ bool Lexer::detectComment()
 	}
 
 	return 0;
+}
+
+bool Lexer::isPrimitiveType(TokenType type)
+{
+	if (type >= TokenType::U32 && type <= TokenType::F64)
+	{
+		return true;
+	}
+	return false;
 }
 
 bool Lexer::detectSymbol()
@@ -330,6 +340,8 @@ bool Lexer::detectSymbol()
 	case '/':
 		tokens.push_back({TokenType::DIVIDE, currentLineNumber});
 		break;
+	case ',':
+		tokens.push_back({TokenType::COMMA, currentLineNumber});
 	default:
 		return 0;
 	}

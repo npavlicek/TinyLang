@@ -303,6 +303,15 @@ bool Lexer::isPrimitiveType(TokenType type)
 	return false;
 }
 
+bool Lexer::isPrimitiveLiteralType(TokenType type)
+{
+	if (type >= TokenType::LITERAL_F64 && type <= TokenType::LITERAL_I64)
+	{
+		return true;
+	}
+	return false;
+}
+
 bool Lexer::detectSymbol()
 {
 	switch (stream.peek())

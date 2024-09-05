@@ -119,5 +119,6 @@ class Lexer
   public:
 	Lexer(std::stringstream &stream) : stream(stream){};
 	static bool isPrimitiveType(TokenType type);
+	static bool isPrimitiveLiteralType(TokenType type);
 	void tokenize();
 };
